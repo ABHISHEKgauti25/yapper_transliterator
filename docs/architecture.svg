@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="782" viewBox="0 0 680 782" role="img" font-family="'Inter','Helvetica Neue',Arial,sans-serif">
+<title>Lipi model architecture</title>
+<desc>End-to-end forward pipeline: Devanagari word, akshara segmentation, codepoint tensor, cluster encoder, slot expansion, bidirectional GRU, CTC head, Roman output, with tensor shape annotations between stages.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+<style>
+.title { font-size: 14px; font-weight: 500; }
+.sub { font-size: 12px; font-weight: 400; }
+.shape { font-size: 12px; font-weight: 400; fill: #5F5E5A; font-family: 'JetBrains Mono','SF Mono',Consolas,monospace; }
+.arr { stroke: #5F5E5A; stroke-width: 1; fill: none; }
+</style>
+</defs>
+
+<!-- Devanagari word -->
+<rect x="200" y="40" width="280" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="title" x="340" y="58" text-anchor="middle" dominant-baseline="central" fill="#2C2C2A">Devanagari word</text>
+<text class="sub" x="340" y="76" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">e.g. क्षमा</text>
+
+<line x1="340" y1="100" x2="340" y2="124" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Akshara segmentation -->
+<rect x="200" y="128" width="280" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="title" x="340" y="146" text-anchor="middle" dominant-baseline="central" fill="#2C2C2A">Akshara segmentation</text>
+<text class="sub" x="340" y="164" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">[&lt;bow&gt;, क्ष, मा, &lt;eow&gt;]</text>
+
+<line x1="340" y1="188" x2="340" y2="212" class="arr" marker-end="url(#arrow)"/>
+<text class="shape" x="500" y="204">[B, A, 16]</text>
+
+<!-- Codepoint tensor -->
+<rect x="200" y="216" width="280" height="56" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="title" x="340" y="234" text-anchor="middle" dominant-baseline="central" fill="#2C2C2A">Codepoint tensor</text>
+<text class="sub" x="340" y="252" text-anchor="middle" dominant-baseline="central" fill="#5F5E5A">NFD, right-padded to L=16</text>
+
+<line x1="340" y1="276" x2="340" y2="300" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Cluster encoder (teal) -->
+<rect x="200" y="304" width="280" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="title" x="340" y="322" text-anchor="middle" dominant-baseline="central" fill="#085041">Cluster encoder</text>
+<text class="sub" x="340" y="340" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">embed · flatten · Linear · GELU · LN</text>
+
+<line x1="340" y1="364" x2="340" y2="388" class="arr" marker-end="url(#arrow)"/>
+<text class="shape" x="500" y="380">[B, A, 96]</text>
+
+<!-- Slot expansion (amber) -->
+<rect x="200" y="392" width="280" height="56" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+<text class="title" x="340" y="410" text-anchor="middle" dominant-baseline="central" fill="#633806">Slot expansion (S = 6)</text>
+<text class="sub" x="340" y="428" text-anchor="middle" dominant-baseline="central" fill="#854F0B">f = c_a + p_s, then LayerNorm</text>
+
+<line x1="340" y1="452" x2="340" y2="476" class="arr" marker-end="url(#arrow)"/>
+<text class="shape" x="500" y="468">[B, A·S, 96]</text>
+
+<!-- BiGRU (purple) -->
+<rect x="200" y="480" width="280" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+<text class="title" x="340" y="498" text-anchor="middle" dominant-baseline="central" fill="#3C3489">Bi-GRU encoder</text>
+<text class="sub" x="340" y="516" text-anchor="middle" dominant-baseline="central" fill="#534AB7">2 layers, h = 128, bidirectional</text>
+
+<line x1="340" y1="540" x2="340" y2="564" class="arr" marker-end="url(#arrow)"/>
+<text class="shape" x="500" y="556">[B, A·S, 256]</text>
+
+<!-- CTC head (teal) -->
+<rect x="200" y="568" width="280" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="title" x="340" y="586" text-anchor="middle" dominant-baseline="central" fill="#085041">CTC head</text>
+<text class="sub" x="340" y="604" text-anchor="middle" dominant-baseline="central" fill="#0F6E56">LayerNorm + Linear + log-softmax</text>
+
+<line x1="340" y1="628" x2="340" y2="652" class="arr" marker-end="url(#arrow)"/>
+<text class="shape" x="500" y="644">[B, A·S, V_tgt]</text>
+
+<!-- CTC decode (amber) -->
+<rect x="200" y="656" width="280" height="56" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+<text class="title" x="340" y="674" text-anchor="middle" dominant-baseline="central" fill="#633806">CTC decode</text>
+<text class="sub" x="340" y="692" text-anchor="middle" dominant-baseline="central" fill="#854F0B">greedy collapse or prefix beam</text>
+
+<line x1="340" y1="716" x2="340" y2="740" class="arr" marker-end="url(#arrow)"/>
+
+<!-- Roman output -->
+<rect x="200" y="744" width="280" height="30" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="title" x="340" y="759" text-anchor="middle" dominant-baseline="central" fill="#2C2C2A">Roman output — "kshama"</text>
+</svg>

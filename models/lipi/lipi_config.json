@@ -1,0 +1,12 @@
+{
+  "source_vocab_size": 129,
+  "target_vocab_size": 77,
+  "source_pad_id": 0,
+  "max_cluster_chars": 16,
+  "slots_per_akshara": 6,
+  "char_embedding_dim": 32,
+  "model_dim": 96,
+  "gru_hidden_size": 128,
+  "gru_layers": 2,
+  "dropout": 0.1
+}
