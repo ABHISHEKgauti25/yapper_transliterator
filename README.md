@@ -174,7 +174,7 @@ Yapper Transliterator currently targets **Hindi Devanagari → Roman Hindi**. It
 
 ## Model release
 
-The Hugging Face model release is named **Lipi** and is published as part of **Yapper Transliterator**. The standalone model card is available in [`models/MODEL_CARD.md`](models/MODEL_CARD.md); the copy intended for the Hugging Face model repository is in [`huggingface/README.md`](huggingface/README.md).
+The Hugging Face model release is named **Lipi** and is published as part of **Yapper Transliterator**. The standalone model card is available in [`models/MODEL_CARD.md`](models/MODEL_CARD.md); the copy intended for the Hugging Face model repository is in [`huggingface/README.md`](https://huggingface.co/abhishekgautamm/lipi-hindi-roman-transliteration).
 
 ## Licensing
 
