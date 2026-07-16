@@ -41,7 +41,21 @@ from .runtime import load_model, validate_checkpoint_vocab
 from .tokenizer import normalize_source, normalize_target
 
 # Devanagari + Vedic extensions + zero-width joiners.
-DEVANAGARI_SPAN = re.compile(r"[\u0900-\u097f\ua8e0-\ua8ff\u200c\u200d]+")
+DEVANAGARI_SPAN = re.compile(
+    r"[\u0900-\u0963\u0971-\u097f\ua8e0-\ua8ff\u200c\u200d]+"
+)
+
+# Devanagari punctuation and digits live inside the letter block. The span
+# regex above deliberately excludes them so they don't get pulled into
+# word matches, but they'd then echo through in the output as-is (e.g.
+# 'है।' -> 'hai।'). Map them to ASCII so downstream text is uniform.
+DEVA_PUNCT_TO_ASCII = str.maketrans({
+    "\u0964": ".",   # । danda
+    "\u0965": ".",   # ॥ double danda
+    "\u0970": ".",   # ॰ abbreviation sign
+    "\u0966": "0", "\u0967": "1", "\u0968": "2", "\u0969": "3", "\u096a": "4",
+    "\u096b": "5", "\u096c": "6", "\u096d": "7", "\u096e": "8", "\u096f": "9",
+})
 
 BACKENDS = ("map_lipi", "lipi")
 
@@ -204,7 +218,14 @@ class Transliterator:
         return self.transliterate_words([word])[word]
 
     def transliterate_text(self, text: str) -> str:
-        """Replace every Devanagari span in ``text`` with its romanization."""
+        """Replace every Devanagari span in ``text`` with its romanization.
+
+        Devanagari punctuation (danda, double danda, abbreviation sign) and
+        Devanagari digits are mapped to their ASCII equivalents before matching,
+        so the output contains only ASCII in place of those codepoints.
+        """
+        text = text.translate(DEVA_PUNCT_TO_ASCII)
+
         # Prime the cache/map with all spans in one batch.
         spans = [m.group(0) for m in DEVANAGARI_SPAN.finditer(text)]
         resolved = self.transliterate_words(spans) if spans else {}
